@@ -1,0 +1,15 @@
+import matplotlib.pyplot as plt
+days=[1,2,3,4,5]
+sleeping=[7,8,3,4,5]
+eating=[2,3,4,5,6]
+working=[6,7,8,4,5]
+playing=[3,4,5,6,4]
+
+slices=[4,5,6,3]
+activities=["sleeping","eating","working","playing"]
+cols=["c","m","r","k"]
+
+plt.pie(slices,labels=activities,colors=cols)
+plt.title("interesting graph")
+plt.legend()
+plt.show()

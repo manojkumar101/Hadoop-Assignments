@@ -1,0 +1,77 @@
+/* Design and develop a distributed application to find the coolest year from the available
+   weather data. Use weather data from the Internet and process it using MapReduce.
+
+*/
+import java.io.IOException;
+import java.util.Iterator;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.conf.Configuration;
+
+public class MyMin {
+
+	public static class MaxTemperatureMapper extends
+			Mapper<LongWritable, Text, Text, FloatWritable> {	
+		@Override
+		public void map(LongWritable arg0, Text Value, Context context)
+				throws IOException, InterruptedException {
+			float min_temp = 90;
+			String line = Value.toString();
+
+			if (!(line.length() == 0)) {				
+				//date				
+				String date = line.substring(6, 14);
+				String year = line.substring(6, 10);
+				//maximum temperature				
+				float temp_Min = Float.parseFloat(line.substring(47, 53).trim());			
+
+				//if maximum temperature is less than 10 , its a cold day				
+				if (temp_Min < min_temp && temp_Min > -100) 
+					context.write(new Text("Coldest Day of " + year + " is: "),new FloatWritable(temp_Min));
+			}
+		}
+	}
+
+	public static class MaxTemperatureReducer extends
+			Reducer<Text, FloatWritable, Text, FloatWritable> {
+
+		public void reduce(Text key, Iterable<FloatWritable> values, Context context)
+				throws IOException, InterruptedException {	
+
+			float min = 100;
+			for (FloatWritable val : values) {      	
+					if(val.get() < min)		
+						min = val.get();
+        	}
+			context.write(key, new FloatWritable(min));
+		}
+	}
+
+	public static void main(String[] args) throws Exception {
+		Configuration conf = new Configuration();	
+		Job job = new Job(conf, "Hottest Years");	
+		job.setJarByClass(MyMin.class);
+		job.setMapOutputKeyClass(Text.class);	
+		job.setMapOutputValueClass(FloatWritable.class);
+		job.setMapperClass(MaxTemperatureMapper.class);	
+		job.setReducerClass(MaxTemperatureReducer.class);
+		job.setInputFormatClass(TextInputFormat.class);	
+		job.setOutputFormatClass(TextOutputFormat.class);
+		Path OutputPath = new Path(args[1]);
+		FileInputFormat.addInputPath(job, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		OutputPath.getFileSystem(conf).delete(OutputPath);
+		System.exit(job.waitForCompletion(true) ? 0 : 1);
+
+	}
+}
+

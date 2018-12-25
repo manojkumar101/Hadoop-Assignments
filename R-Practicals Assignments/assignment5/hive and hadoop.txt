@@ -1,0 +1,39 @@
+# Creating Database tables
+hive> CREATE DATABASE [IF NOT EXISTS] userdb;
+hive> SHOW DATABASES;
+userdb
+
+# Dropping Database tables
+hive> DROP DATABASE IF EXISTS userdb;
+
+# Creating Table
+hive> CREATE TABLE IF NOT EXISTS employee ( eid int, name String,
+salary String, destination String)
+COMMENT ‘Employee details’
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ‘\t’
+LINES TERMINATED BY ‘\n’
+STORED AS TEXTFILE;
+
+
+
+# Alter Table
+hive> ALTER TABLE employee RENAME TO emp;
+hive> ALTER TABLE employee DROP [COLUMN] eid;
+hive> ALTER TABLE employee CHANGE name new_name String;
+hive> ALTER TABLE employee ADD COLUMNS (city String);
+hive> DROP TABLE IF EXISTS employee;
+
+
+
+# Create View
+hive> CREATE VIEW emp_30000 AS
+SELECT * FROM employee
+WHERE salary>30000;
+
+# Create Index
+hive> CREATE INDEX index_name ON TABLE employee (eid);
+hive> CREATE INDEX inedx_salary ON TABLE employee(salary);
+
+# Drop Index
+hive> DROP INDEX index_salary ON employee;
